@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "740127573991",
+    "project_id": "notion-unity-example",
+    "storage_bucket": "notion-unity-example.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:740127573991:android:6188fbde8a3065b16b5f42",
+        "android_client_info": {
+          "package_name": "com.notion.unity.example"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "740127573991-kfddpivfuha06df8cb1l3fnkqk7q9j6j.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDQ7Cimhmqu8VJALYbVZVy9dnwDUOvcdhc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "740127573991-kfddpivfuha06df8cb1l3fnkqk7q9j6j.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "740127573991-r4o2hhr5ac2sscupqq7229bssq6q4m60.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.notion.unity.example"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
