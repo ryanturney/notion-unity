@@ -1,4 +1,5 @@
 using Newtonsoft.Json;
+using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -42,11 +43,11 @@ namespace Notion.Unity.Example
 
             _buttonLogin.onClick.AddListener(() =>
             {
+                _buttonLogin.interactable = false;
+
                 if (_notion != null && _notion.IsLoggedIn)
                 {
-                    _notion.Disconnect();
-                    SetButtonStates();
-                    Debug.Log("Logged out");
+                    Logout();
                 }
                 else
                 {
@@ -63,15 +64,9 @@ namespace Notion.Unity.Example
         private void SetButtonStates()
         {
             _buttonLogin.interactable = true;
-            if(_notion.IsLoggedIn)
-            {
-                _buttonLogin.GetComponentInChildren<Text>().text = "Logout";
-            }
-            else
-            {
-                _buttonLogin.GetComponentInChildren<Text>().text = "Login";
-            }
 
+            string loginButtonText = _notion.IsLoggedIn ? "Logout" : "Login";
+            _buttonLogin.GetComponentInChildren<Text>().text = loginButtonText;
             _buttonGetDevices.interactable = _notion.IsLoggedIn;
             _buttonGetStatus.interactable = _notion.IsLoggedIn;
             _buttonSubscribeCalm.interactable = _notion.IsLoggedIn;
@@ -88,6 +83,16 @@ namespace Notion.Unity.Example
 
             Debug.Log("Logged in");
             SetButtonStates();
+        }
+
+        public async void Logout()
+        {
+            await _notion.Logout();
+            SetButtonStates();
+            _controller = null;
+            _notion = null;
+
+            Debug.Log("Logged out");
         }
 
         public async void GetDevices()
@@ -107,7 +112,7 @@ namespace Notion.Unity.Example
         {
             if (!_notion.IsLoggedIn) return;
             _notion.Subscribe(new CalmHandler());
-            Debug.Log("Subscribed to calm");            
+            Debug.Log("Subscribed to calm");
         }
 
         public void SubscribeFocus()
@@ -117,11 +122,14 @@ namespace Notion.Unity.Example
             Debug.Log("Subscribed to focus");
         }
 
-        private void OnDisable()
+        private async void OnDisable()
         {
             if (_notion == null) return;
-            _notion.Disconnect();
-            _controller.Logout();
+            if (!_notion.IsLoggedIn) return;
+
+            // Wrapping because Logout is meant to be invoked and forgotten about for use in button callbacks.
+            await Task.Run(() => Logout());
+            Debug.Log($"Logged out from {nameof(OnDisable)}");
         }
     }
 }

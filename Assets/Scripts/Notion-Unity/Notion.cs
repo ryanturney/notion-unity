@@ -28,20 +28,11 @@ namespace Notion.Unity
             IsLoggedIn = true;
         }
 
-        public void Logout()
-        {
-            _firebase.Logout();
-            IsLoggedIn = false;
-        }
-
-        public async void Disconnect()
+        public async Task Logout()
         {
             await _subscriptionManager.Dispose();
-            _firebase.NotionDatabase.GoOffline();
-
-            Logout();
-            _firebase.NotionAuth.Dispose();
-            _firebase.NotionApp.Dispose();
+            _firebase.Logout();
+            IsLoggedIn = false;
         }
 
         public async Task<IEnumerable<DeviceInfo>> GetDevices()

@@ -48,7 +48,16 @@ namespace Notion.Unity
 
         public void Logout()
         {
+            NotionDatabase.GoOffline();
             NotionAuth.SignOut();
+            NotionAuth.Dispose();
+            NotionApp.Dispose();
+            App.Dispose();
+
+            NotionDatabase = null;
+            NotionAuth = null;
+            NotionApp = null;
+            App = null;
         }
     }
 }
