@@ -1,5 +1,6 @@
 ﻿public enum Metrics
 {
     Awareness,
-    Kinesis
+    Kinesis,
+    Brainwaves
 }
