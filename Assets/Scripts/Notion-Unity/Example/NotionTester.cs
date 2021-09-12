@@ -130,7 +130,7 @@ namespace Notion.Unity.Example
         public void SubscribeBrainwaves()
         {
             if (!_notion.IsLoggedIn) return;
-            _notion.Subscribe(new RawBrainwavesHandler());
+            _notion.Subscribe(new BrainwavesRawHandler());
             Debug.Log("Subscribed to raw brainwaves");
         }
 
