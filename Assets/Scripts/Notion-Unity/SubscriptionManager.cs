@@ -7,6 +7,7 @@ namespace Notion.Unity
 {
     public class SubscriptionManager
     {
+        private readonly NeurosityUser _user;
         private readonly Dictionary<IMetricHandler, string> _firebaseIDs;
         private readonly Dictionary<string, HashSet<IMetricHandler>> _subscriptions;
         private readonly Dictionary<string, DatabaseReference> _databaseReferences;
@@ -14,8 +15,9 @@ namespace Notion.Unity
         private readonly DatabaseReference _deviceRef;
         private readonly DatabaseReference _deviceSubsRef;
 
-        public SubscriptionManager(FirebaseController firebase, Device credientials)
+        public SubscriptionManager(FirebaseController firebase, Device credientials, NeurosityUser user)
         {
+            _user = user;
             _firebaseIDs = new Dictionary<IMetricHandler, string>();
             _subscriptions = new Dictionary<string, HashSet<IMetricHandler>>();
             _databaseReferences = new Dictionary<string, DatabaseReference>();

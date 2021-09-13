@@ -10,7 +10,7 @@
         public string Manufacturer { get; set; }
         public string Model { get; set; }
         public string ModelName { get; set; }
-        public string ModelVersion { get; set; }
+        public int ModelVersion { get; set; }
         public string OsVersion { get; set; }
         public int SamplingRate { get; set; }
     }

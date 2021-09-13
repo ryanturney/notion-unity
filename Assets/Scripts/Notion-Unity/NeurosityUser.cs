@@ -47,10 +47,15 @@ namespace Notion.Unity
             return devicesInfo;
         }
 
-        public async Task<DeviceStatus> GetSelectedDevice()
+        public async Task<DeviceInfo> GetSelectedDevice()
         {
             var devices = await GetDevices();
-            var selectedDevice = devices.FirstOrDefault();
+            return devices.FirstOrDefault();
+        }
+
+        public async Task<DeviceStatus> GetSelectedDeviceStatus()
+        {
+            var selectedDevice = await GetSelectedDevice();
 
             var statusSnapshot = await _firebase.NotionDatabase.
                 GetReference($"devices/{selectedDevice.DeviceId}/status").GetValueAsync();

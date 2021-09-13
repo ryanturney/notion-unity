@@ -21,9 +21,9 @@ namespace Notion.Unity
         {
             var u = await _firebase.Login(credientials);
             _user = new NeurosityUser(u, _firebase);
-            _subscriptionManager = new SubscriptionManager(_firebase, credientials);
+            _subscriptionManager = new SubscriptionManager(_firebase, credientials, _user);
 
-            Status = await _user.GetSelectedDevice();
+            Status = await _user.GetSelectedDeviceStatus();
 
             IsLoggedIn = true;
         }
@@ -40,9 +40,14 @@ namespace Notion.Unity
             return await _user.GetDevices();
         }
 
-        public async Task<DeviceStatus> GetSelectedDevice()
+        public async Task<DeviceInfo> GetSelectedDevice()
         {
             return await _user.GetSelectedDevice();
+        }
+
+        public async Task<DeviceStatus> GetSelectedDeviceStatus()
+        {
+            return await _user.GetSelectedDeviceStatus();
         }
 
         public void Subscribe(IMetricHandler handler)
