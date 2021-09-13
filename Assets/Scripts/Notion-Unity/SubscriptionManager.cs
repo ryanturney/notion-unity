@@ -29,8 +29,12 @@ namespace Notion.Unity
 
         public async void Subscribe(IMetricHandler handler)
         {
-            await AddFirebaseSubscription(handler);
-            string key = $"metrics/{handler.Metric.ToString().ToLower()}/{handler.Label}";
+            if (!await CanSubscribe(handler)) return;
+
+            bool isAtomic = IsAtomic(handler);
+            await AddFirebaseSubscription(handler, isAtomic);
+            string key = $"metrics/{handler.Metric.ToString().ToLower()}";
+            if (!isAtomic) key += $"/{handler.Label}";
 
             if (!_subscriptions.ContainsKey(key))
             {
@@ -56,9 +60,9 @@ namespace Notion.Unity
 
             if (_subscriptions.TryGetValue(key, out HashSet<IMetricHandler> handlers))
             {
-                if(_firebaseIDs.TryGetValue(handler, out string firebaseId))
+                if (_firebaseIDs.TryGetValue(handler, out string firebaseId))
                 {
-                     await _deviceRef.Child($"subscriptions/{firebaseId}").RemoveValueAsync();
+                    await _deviceRef.Child($"subscriptions/{firebaseId}").RemoveValueAsync();
                 }
 
                 bool success = handlers.Remove(handler);
@@ -80,17 +84,36 @@ namespace Notion.Unity
             await _clientRef.OnDisconnect().RemoveValue();
         }
 
+        private async Task<bool> CanSubscribe(IMetricHandler handler)
+        {
+            bool canSubscribe = true;
+            switch (handler.Metric)
+            {
+                case Metrics.Accelerometer:
+                    var selectedDevice = await _user.GetSelectedDevice();
+                    canSubscribe = selectedDevice.ModelVersion > 2;
+                    break;
+            }
+
+            return canSubscribe;
+        }
+
+        private bool IsAtomic(IMetricHandler handler)
+        {
+            return string.IsNullOrWhiteSpace(handler.Label);
+        }
+
         /// <summary>
         /// Adds a subscription reference into the Firebase Database location of the current device.
         /// See deviceStore.js -> creativeDeviceStore -> subscribeToMetric
         /// </summary>
-        private async Task AddFirebaseSubscription(IMetricHandler handler)
+        private async Task AddFirebaseSubscription(IMetricHandler handler, bool isAtomic = false)
         {
             var subscriptionInfo = new Dictionary<string, object>
             {
                 { "metric", handler.Metric.ToString().ToLower() },
-                { "labels", new string[]{ handler.Label} },
-                { "atomic", false },
+                { "labels", isAtomic ? new string[]{ string.Empty } : new string[] { handler.Label } },
+                { "atomic", isAtomic },
                 { "serverType", "firebase" }
             };
 
@@ -118,13 +141,7 @@ namespace Notion.Unity
                         continue;
                     }
 
-                    if (!e.Snapshot.Exists)
-                    {
-                        Debug.LogError(e.Snapshot.Reference + " doesn't exist.");
-                        break;
-                    }
-
-                    if (handler.Label != e.Snapshot.Key) continue;
+                    if (!e.Snapshot.Exists) continue;
 
                     string json = e.Snapshot.GetRawJsonValue();
                     if (string.IsNullOrEmpty(json)) continue;

@@ -2,5 +2,6 @@
 {
     Awareness,
     Kinesis,
-    Brainwaves
+    Brainwaves,
+    Accelerometer
 }

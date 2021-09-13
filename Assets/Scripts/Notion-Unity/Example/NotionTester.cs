@@ -28,6 +28,9 @@ namespace Notion.Unity.Example
         [SerializeField]
         Button _buttonSubscribeRawBrainwaves;
 
+        [SerializeField]
+        Button _buttonSubscribeAccelerometer;
+
         FirebaseController _controller;
         Notion _notion;
 
@@ -63,6 +66,7 @@ namespace Notion.Unity.Example
             _buttonSubscribeCalm.onClick.AddListener(() => SubscribeCalm());
             _buttonSubscribeFocus.onClick.AddListener(() => SubscribeFocus());
             _buttonSubscribeRawBrainwaves.onClick.AddListener(() => SubscribeBrainwaves());
+            _buttonSubscribeAccelerometer.onClick.AddListener(() => SubscribeAccelerometer());
         }
 
         private void SetButtonStates()
@@ -76,6 +80,7 @@ namespace Notion.Unity.Example
             _buttonSubscribeCalm.interactable = _notion.IsLoggedIn;
             _buttonSubscribeFocus.interactable = _notion.IsLoggedIn;
             _buttonSubscribeRawBrainwaves.interactable = _notion.IsLoggedIn;
+            _buttonSubscribeAccelerometer.interactable = _notion.IsLoggedIn;
         }
 
         public async void Login()
@@ -132,6 +137,13 @@ namespace Notion.Unity.Example
             if (!_notion.IsLoggedIn) return;
             _notion.Subscribe(new BrainwavesRawHandler());
             Debug.Log("Subscribed to raw brainwaves");
+        }
+
+        public void SubscribeAccelerometer()
+        {
+            if (!_notion.IsLoggedIn) return;
+            _notion.Subscribe(new AccelerometerHandler());
+            Debug.Log("Subscribed to accelerometer");
         }
 
         private async void OnDisable()
