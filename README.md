@@ -12,6 +12,8 @@ This is the beginnings of a crude C# port of [Neurosity JS SDK](https://github.c
 This is very much a work in progress. It is feature incomplete, there will be bugs, very little error checking and the architecture isn't sound. The implemented features are not guaranteed to have exact 1-to-1 API parity of the JS SDK but that is the eventual goal.
 
 The following list is what has been implemented:
+* [Accelerometer](https://docs.neurosity.co/docs/reference/classes/notion#accelerometer)
+* [Brainwaves](https://docs.neurosity.co/docs/reference/classes/notion#accelerometer)
 * [Login](https://docs.neurosity.co/docs/reference/classes/notion#login)
 * [Logout](https://docs.neurosity.co/docs/reference/classes/notion#logout)
 * [Calm](https://docs.neurosity.co/docs/reference/classes/notion#calm)
@@ -22,7 +24,7 @@ The following list is what has been implemented:
 
 ## How to Use
  This has only been tested in the Unity Editor and Android. In theory this should work on iOS as there is no device specific implementations of the notion functionality.
- 
+
  1. Open in Unity 2020.3.15 LTS or newer
  2. Create a Device ScriptableObject instance. `Create -> Assets -> Device` and fill out the ScriptableObject with your credentials and device ID.
  3. Open `Scripts/Notion-Unity/Example/NotionExample`. Select `NotionTester` in the Hierarchy and select your newly created Device asset in the Notion Tester component.
