@@ -59,5 +59,14 @@ namespace Notion.Unity
         {
             _subscriptionManager.Unsubscribe(handler);
         }
+        public async Task RemoveDevice(string deviceId)
+        {
+            await _user.RemoveDevice(deviceId);
+        }
+
+        public async Task RemoveDevice(Device device)
+        {
+            await RemoveDevice(device.DeviceId);
+        }
     }
 }

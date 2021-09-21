@@ -63,5 +63,15 @@ namespace Notion.Unity
 
             return JsonConvert.DeserializeObject<DeviceStatus>(json);
         }
+        public async Task RemoveDevice(string deviceId)
+        {
+            string claimedByPath = $"devices/{deviceId}/status/claimedBy";
+            string userDevicePath = $"users/{UserId}/devices/{deviceId}";
+            var claimedByRef = _firebase.NotionDatabase.GetReference(claimedByPath);
+            var userDeviceRef = _firebase.NotionDatabase.GetReference(userDevicePath);
+
+            await claimedByRef.RemoveValueAsync();
+            await userDeviceRef.RemoveValueAsync();
+        }
     }
 }
