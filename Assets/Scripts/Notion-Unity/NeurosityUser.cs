@@ -16,6 +16,8 @@ namespace Notion.Unity
         private readonly FirebaseUser _firebaseUsers;
         private readonly DatabaseReference _devicesReference;
 
+        private DatabaseReference _deviceRef;
+
         public NeurosityUser(FirebaseUser firebaseUser, FirebaseController firebase)
         {
             _firebase = firebase;
@@ -50,7 +52,9 @@ namespace Notion.Unity
         public async Task<DeviceInfo> GetSelectedDevice()
         {
             var devices = await GetDevices();
-            return devices.FirstOrDefault();
+            DeviceInfo selectedDevice = devices.FirstOrDefault();
+            _deviceRef = _firebase.NotionDatabase.GetReference($"devices/{selectedDevice.DeviceId}");
+            return selectedDevice;
         }
 
         public async Task<DeviceStatus> GetSelectedDeviceStatus()
@@ -63,6 +67,13 @@ namespace Notion.Unity
 
             return JsonConvert.DeserializeObject<DeviceStatus>(json);
         }
+
+        public async Task UpdateSettings(Settings settings)
+        {
+            if (_deviceRef == null) return;
+            await _deviceRef.Child("settings").SetValueAsync(settings.ToDictionary());
+        }
+
         public async Task RemoveDevice(string deviceId)
         {
             string claimedByPath = $"devices/{deviceId}/status/claimedBy";

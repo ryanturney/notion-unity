@@ -9,7 +9,8 @@ namespace Notion.Unity
     {
         private readonly NeurosityUser _user;
         private readonly Dictionary<IMetricHandler, string> _firebaseIDs;
-        private readonly Dictionary<string, HashSet<IMetricHandler>> _subscriptions;
+        private readonly Dictionary<string, HashSet<IMetricHandler>> _subscriptionsMetrics;
+        private readonly HashSet<ISettingsHandler> _subscriptionsSettings;
         private readonly Dictionary<string, DatabaseReference> _databaseReferences;
         private readonly DatabaseReference _clientRef;
         private readonly DatabaseReference _deviceRef;
@@ -19,12 +20,25 @@ namespace Notion.Unity
         {
             _user = user;
             _firebaseIDs = new Dictionary<IMetricHandler, string>();
-            _subscriptions = new Dictionary<string, HashSet<IMetricHandler>>();
+            _subscriptionsSettings = new HashSet<ISettingsHandler>();
+            _subscriptionsMetrics = new Dictionary<string, HashSet<IMetricHandler>>();
             _databaseReferences = new Dictionary<string, DatabaseReference>();
 
             _deviceRef = firebase.NotionDatabase.GetReference($"devices/{credientials.DeviceId}");
             _deviceSubsRef = _deviceRef.Child("subscriptions");
             _clientRef = _deviceRef.Child($"clients/{_deviceSubsRef.Push().Key}");
+        }
+
+        public void Subscribe(ISettingsHandler handler)
+        {
+            if (_subscriptionsSettings.Contains(handler)) return;
+            _deviceRef.Child("settings").ValueChanged += HandleSettingsValueChanged;
+            _subscriptionsSettings.Add(handler);
+        }
+
+        public void Unsubscribe(ISettingsHandler handler)
+        {
+            _subscriptionsSettings.Remove(handler);
         }
 
         public async void Subscribe(IMetricHandler handler)
@@ -36,21 +50,21 @@ namespace Notion.Unity
             string key = $"metrics/{handler.Metric.ToString().ToLower()}";
             if (!isAtomic) key += $"/{handler.Label}";
 
-            if (!_subscriptions.ContainsKey(key))
+            if (!_subscriptionsMetrics.ContainsKey(key))
             {
                 DatabaseReference databaseRef = _deviceRef.Child(key);
-                databaseRef.ValueChanged += DatabaseRef_ValueChanged;
+                databaseRef.ValueChanged += HandleMetricValueChanged;
                 _databaseReferences.Add(key, databaseRef);
 
                 Debug.Log(databaseRef.Reference);
 
                 HashSet<IMetricHandler> handlers = new HashSet<IMetricHandler>();
                 handlers.Add(handler);
-                _subscriptions.Add(key, handlers);
+                _subscriptionsMetrics.Add(key, handlers);
             }
             else
             {
-                _subscriptions[key].Add(handler);
+                _subscriptionsMetrics[key].Add(handler);
             }
         }
 
@@ -58,7 +72,7 @@ namespace Notion.Unity
         {
             string key = $"metrics/{handler.Metric.ToString().ToLower()}/{handler.Label}";
 
-            if (_subscriptions.TryGetValue(key, out HashSet<IMetricHandler> handlers))
+            if (_subscriptionsMetrics.TryGetValue(key, out HashSet<IMetricHandler> handlers))
             {
                 if (_firebaseIDs.TryGetValue(handler, out string firebaseId))
                 {
@@ -74,12 +88,12 @@ namespace Notion.Unity
         {
             foreach (var databaseRef in _databaseReferences)
             {
-                databaseRef.Value.ValueChanged -= DatabaseRef_ValueChanged;
+                databaseRef.Value.ValueChanged -= HandleMetricValueChanged;
             }
 
             _firebaseIDs.Clear();
             _databaseReferences.Clear();
-            _subscriptions.Clear();
+            _subscriptionsMetrics.Clear();
 
             await _clientRef.OnDisconnect().RemoveValue();
         }
@@ -125,29 +139,47 @@ namespace Notion.Unity
             await _deviceRef.Child(childPath).OnDisconnect().RemoveValue();
         }
 
-        private void DatabaseRef_ValueChanged(object sender, ValueChangedEventArgs e)
+        private void HandleMetricValueChanged(object sender, ValueChangedEventArgs args)
         {
-            string fullPath = e.Snapshot.Reference.ToString();
+            string fullPath = args.Snapshot.Reference.ToString();
             int delimiter = fullPath.LastIndexOf("metrics");
             string valuePath = fullPath.Substring(delimiter);
 
-            if (_subscriptions.TryGetValue(valuePath, out HashSet<IMetricHandler> handlers))
+            if (_subscriptionsMetrics.TryGetValue(valuePath, out HashSet<IMetricHandler> handlers))
             {
                 foreach (var handler in handlers)
                 {
-                    if (e.DatabaseError != null)
+                    if (args.DatabaseError != null)
                     {
-                        Debug.LogError(e.DatabaseError.Message);
+                        Debug.LogError(args.DatabaseError.Message);
                         continue;
                     }
 
-                    if (!e.Snapshot.Exists) continue;
+                    if (!args.Snapshot.Exists) continue;
 
-                    string json = e.Snapshot.GetRawJsonValue();
+                    string json = args.Snapshot.GetRawJsonValue();
                     if (string.IsNullOrEmpty(json)) continue;
 
                     handler.Handle(json);
                 }
+            }
+        }
+
+        private void HandleSettingsValueChanged(object sender, ValueChangedEventArgs args)
+        {
+            foreach(var handler in _subscriptionsSettings)
+            {
+                if (args.DatabaseError != null)
+                {
+                    Debug.LogError(args.DatabaseError.Message);
+                    continue;
+                }
+
+                if (!args.Snapshot.Exists) continue;
+                string json = args.Snapshot.GetRawJsonValue();
+                if (string.IsNullOrEmpty(json)) continue;
+
+                handler.Handle(json);
             }
         }
     }

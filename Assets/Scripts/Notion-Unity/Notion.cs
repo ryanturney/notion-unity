@@ -55,10 +55,26 @@ namespace Notion.Unity
             _subscriptionManager.Subscribe(handler);
         }
 
+        public void Subscribe(ISettingsHandler handler)
+        {
+            _subscriptionManager.Subscribe(handler);
+        }
+
         public void Unsubscribe(IMetricHandler handler)
         {
             _subscriptionManager.Unsubscribe(handler);
         }
+
+        public void Unsubscribe(ISettingsHandler handler)
+        {
+            _subscriptionManager.Unsubscribe(handler);
+        }
+
+        public async void ChangeSettings(Settings settings)
+        {
+            await _user.UpdateSettings(settings);
+        }
+
         public async Task RemoveDevice(string deviceId)
         {
             await _user.RemoveDevice(deviceId);
