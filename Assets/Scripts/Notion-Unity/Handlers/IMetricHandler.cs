@@ -1,6 +1,9 @@
-﻿public interface IMetricHandler
+﻿namespace Notion.Unity
 {
-    Metrics Metric { get; }
-    string Label { get; }
-    void Handle(string metricData);
+    public interface IMetricHandler
+    {
+        Metrics Metric { get; }
+        string Label { get; }
+        void Handle(string metricData);
+    }
 }

@@ -47,7 +47,7 @@ namespace Notion.Unity
 
             bool isAtomic = IsAtomic(handler);
             await AddFirebaseSubscription(handler, isAtomic);
-            string key = $"metrics/{handler.Metric.ToString().ToLower()}";
+            string key = $"metrics/{handler.Metric.GetMetricDescription()}";
             if (!isAtomic) key += $"/{handler.Label}";
 
             if (!_subscriptionsMetrics.ContainsKey(key))
@@ -70,7 +70,7 @@ namespace Notion.Unity
 
         public async void Unsubscribe(IMetricHandler handler)
         {
-            string key = $"metrics/{handler.Metric.ToString().ToLower()}/{handler.Label}";
+            string key = $"metrics/{handler.Metric.GetMetricDescription()}/{handler.Label}";
 
             if (_subscriptionsMetrics.TryGetValue(key, out HashSet<IMetricHandler> handlers))
             {
@@ -125,7 +125,7 @@ namespace Notion.Unity
         {
             var subscriptionInfo = new Dictionary<string, object>
             {
-                { "metric", handler.Metric.ToString().ToLower() },
+                { "metric", handler.Metric.GetMetricDescription() },
                 { "labels", isAtomic ? new string[]{ string.Empty } : new string[] { handler.Label } },
                 { "atomic", isAtomic },
                 { "serverType", "firebase" }

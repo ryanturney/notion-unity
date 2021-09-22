@@ -1,7 +1,14 @@
-﻿public enum Metrics
+﻿using System.ComponentModel;
+
+namespace Notion.Unity
 {
-    Awareness,
-    Kinesis,
-    Brainwaves,
-    Accelerometer
+    public enum Metrics
+    {
+        Awareness,
+        Kinesis,
+        Brainwaves,
+        Accelerometer,
+        [Description("signalQuality")]
+        SignalQuality
+    }
 }
