@@ -31,6 +31,12 @@ namespace Notion.Unity.Example
         [SerializeField]
         Button _buttonSubscribeAccelerometer;
 
+        [SerializeField]
+        Button _buttonSubscribeKinesis;
+
+        [SerializeField]
+        Text _textKinesisProbability;
+
         FirebaseController _controller;
         Notion _notion;
 
@@ -67,6 +73,7 @@ namespace Notion.Unity.Example
             _buttonSubscribeFocus.onClick.AddListener(() => SubscribeFocus());
             _buttonSubscribeRawBrainwaves.onClick.AddListener(() => SubscribeBrainwaves());
             _buttonSubscribeAccelerometer.onClick.AddListener(() => SubscribeAccelerometer());
+            _buttonSubscribeKinesis.onClick.AddListener(() => SubscribeKinesis(kinesisLabel: "leftArm"));
         }
 
         private void SetButtonStates()
@@ -81,6 +88,8 @@ namespace Notion.Unity.Example
             _buttonSubscribeFocus.interactable = _notion.IsLoggedIn;
             _buttonSubscribeRawBrainwaves.interactable = _notion.IsLoggedIn;
             _buttonSubscribeAccelerometer.interactable = _notion.IsLoggedIn;
+            _buttonSubscribeKinesis.interactable = _notion.IsLoggedIn;
+            _textKinesisProbability.text = _notion.IsLoggedIn ? string.Empty : "[KINESIS PROBABILITY]";
         }
 
         public async void Login()
@@ -144,6 +153,24 @@ namespace Notion.Unity.Example
             if (!_notion.IsLoggedIn) return;
             _notion.Subscribe(new AccelerometerHandler());
             Debug.Log("Subscribed to accelerometer");
+        }
+
+        /// <summary>
+        /// Add kinesisLabel based on the thought you're training.
+        /// For instance: leftArm, rightArm, leftIndexFinger, etc
+        /// </summary>
+        /// <param name="kinesisLabel"></param>
+        public void SubscribeKinesis(string kinesisLabel)
+        {
+            if (!_notion.IsLoggedIn) return;
+
+            _notion.Subscribe(new KinesisHandler
+            {
+                Label = kinesisLabel,
+                OnKinesisUpdated = (probability) => {
+                    _textKinesisProbability.text = $"{kinesisLabel} : {probability}";
+                }
+            });
         }
 
         private async void OnDisable()
